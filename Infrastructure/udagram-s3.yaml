@@ -8,22 +8,22 @@ Parameters:
   EnvironmentName:
     Description: An environment name that will be prefixed to resource names.
     Type: String
-    Default: UdagramApp
+    Default: Udagram
 
   S3BucketAppName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-app
+    Default: udagram-app-huydvq
 
   S3BucketKeyName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-key
+    Default: udagram-key-huydvq
 
   S3BucketLogsName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-logs
+    Default: udagram-logs-huydvq
 
 ############################### Resources #################################
 Resources:

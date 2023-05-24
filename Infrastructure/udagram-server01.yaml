@@ -7,7 +7,7 @@ Parameters:
   EnvironmentName:
     Description: An environment name that will be prefixed to resource names
     Type: String
-    Default: UdagramApp
+    Default: Udagram
 
   SourceIP:
     Description: Ip address to allow SSH access to the bastion host
@@ -17,7 +17,7 @@ Parameters:
   S3BucketKeyName:
     Description: S3Bucke where ssh key is hosted
     Type: String
-    Default: udagram-key-patryk
+    Default: udagram-key-huydvq
 
   ## You have to create a .pem file, and upload it to S3 buckets.
   KeyBastionSSH:

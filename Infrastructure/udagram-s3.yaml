@@ -15,7 +15,7 @@ Parameters:
     Type: String
     Default: udagram-app
 
-  S3BucketName:
+  S3BucketKeyName:
     Description: A Bucked name.
     Type: String
     Default: udagram-key
@@ -31,29 +31,40 @@ Resources:
   S3WebApp:
     Type: AWS::S3::Bucket
     Properties:
+      PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
       BucketName: !Ref S3BucketAppName
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
 
   S3WebAppPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref S3WebApp
       PolicyDocument:
+        Version: 2012-10-17
         Statement:
-          - Effect: Allow
-            Action: s3:*
+          - Action:
+            - 's3:GetObject'
+            Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3WebApp', '/*']]
-            Principal:
-              AWS: '*'
+            Principal: '*'
 
   ## KeyPar Bucket
   S3KeyPar:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref S3BucketName
+      PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      BucketName: !Ref S3BucketKeyName
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
@@ -64,24 +75,31 @@ Resources:
     Properties:
       Bucket: !Ref S3KeyPar
       PolicyDocument:
+        Version: 2012-10-17
         Statement:
           - Sid: AllowStaticObjectDownload
-            Action: s3:GetObject
+            Action:
+            - 's3:GetObject'
             Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3KeyPar', '/*']]
-            Principal:
-              AWS: '*'
+            Principal: '*'
+
           - Sid: PutObjectAccess
-            Action: s3:PutObject
+            Action:
+            - 's3:PutObject'
             Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3KeyPar', '/*']]
-            Principal:
-              AWS: '*'
+            Principal: '*'
 
   ## Logs Bucket
   S3Logs:
     Type: AWS::S3::Bucket
     Properties:
+      PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
       BucketName: !Ref S3BucketLogsName
       WebsiteConfiguration:
         IndexDocument: index.html
@@ -93,19 +111,21 @@ Resources:
     Properties:
       Bucket: !Ref S3Logs
       PolicyDocument:
+        Version: 2012-10-17
         Statement:
           - Sid: AllowStaticObjectDownload
-            Action: s3:GetObject
+            Action:
+            - 's3:GetObject'
             Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Logs', '/*']]
-            Principal:
-              AWS: '*'
+            Principal: '*'
+
           - Sid: PutObjectAccess
-            Action: s3:PutObject
+            Action:
+            - 's3:PutObject'
             Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Logs', '/*']]
-            Principal:
-              AWS: '*'
+            Principal: '*'
 
 ############################### Outputs #################################
 Outputs:

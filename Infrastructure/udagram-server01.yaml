@@ -17,7 +17,7 @@ Parameters:
   S3BucketKeyName:
     Description: S3Bucke where ssh key is hosted
     Type: String
-    Default: udagram-key
+    Default: udagram-key-patryk
 
   ## You have to create a .pem file, and upload it to S3 buckets.
   KeyBastionSSH:
@@ -101,7 +101,7 @@ Resources:
       SubnetId:
         Fn::ImportValue: !Sub '${EnvironmentName}-PUB1-SN'
       ImageId: !FindInMap [WebAppRegion, !Ref 'AWS::Region', HVM64]
-      InstanceType: t3.small
+      InstanceType: t3.medium
       KeyName: !Sub ${KeyBastionSSH}
 
   EIP1:
@@ -139,7 +139,7 @@ Resources:
           chmod 400 ${KeyBastionSSH}.pem
       IamInstanceProfile: !Ref BastionIamInstanceProfile
       ImageId: !FindInMap [WebAppRegion, !Ref 'AWS::Region', HVM64]
-      InstanceType: t3.small
+      InstanceType: t3.medium
       KeyName: !Sub ${KeyBastionSSH}
       SecurityGroupIds:
         - Ref: BastionSecurityGroup

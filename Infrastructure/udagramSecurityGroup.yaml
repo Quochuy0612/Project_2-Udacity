@@ -1,0 +1,119 @@
+Description:
+  HuyDVQ | Udacity 2023
+  AWS-CloudFormation script to create a Security Group.
+
+############################### Parameters ################################
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: Udagram
+
+############################### Resources #################################
+Resources:
+
+  BastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: BastionSG
+      GroupDescription: SG to access to bastion host
+      VpcId:
+        Fn::ImportValue: !Sub '${EnvironmentName}-VPCID'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-BastionSecurityGroup
+
+  LoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: LoadBalancerSG
+      GroupDescription: Allow http to our load balancer
+      VpcId:
+        Fn::ImportValue: !Sub '${EnvironmentName}-VPCID'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-LoadBalancerSecurityGroup
+
+  WebAppSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: WebServerSG
+      GroupDescription: Allow http to our hosts and SSH access
+      VpcId:
+        Fn::ImportValue: !Sub '${EnvironmentName}-VPCID' 
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0    
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-WebAppSecurityGroup
+
+  InboundRule1:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt WebAppSG.GroupId
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+
+  InboundRule2:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt WebAppSG.GroupId
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt BastionSG.GroupId
+
+############################### Outputs #################################
+Outputs:
+  LoadBalancerSG:
+    Description: "Load Balancer Security Group Id"
+    Value:
+      'Fn::GetAtt':
+        - LoadBalancerSG
+        - GroupId
+    Export:
+      Name:
+        'Fn::Sub': '${EnvironmentName}-LB-SG'
+  
+  BastionSG:
+    Description: "Bastion Host Security Group Id"
+    Value:
+      'Fn::GetAtt':
+        - BastionSG
+        - GroupId
+    Export:
+      Name:
+        'Fn::Sub': '${EnvironmentName}-BASTION-SG'
+
+  WebAppSG:
+    Description: "Web App Security Group Id"
+    Value:
+      'Fn::GetAtt':
+        - WebAppSG
+        - GroupId
+    Export:
+      Name:
+        'Fn::Sub': '${EnvironmentName}-WebApp-SG'

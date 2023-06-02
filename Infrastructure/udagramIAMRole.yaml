@@ -1,0 +1,59 @@
+Description: >
+  HuyDVQ | Udacity 2023
+  AWS-CloudFormation script to create a IAM Role.
+
+############################### Parameters ################################
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: Udagram
+
+############################### Resources ################################
+Resources:
+  S3IamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/'
+
+  S3Policies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: fullAccess
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: 's3:*'
+            Resource: '*'
+      Roles:
+        - !Ref S3IamRole
+
+  S3InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: '/'
+      Roles:
+        - !Ref S3IamRole
+
+############################### Resources #################################
+Outputs:
+  S3IamRole:
+    Description: 'Allow EC2 instances to manage Web App S3'
+    Value: !Ref S3InstanceProfile
+    Export:
+      Name: !Sub ${EnvironmentName}-IAM
+  S3IamRoleArn:
+    Description: Iam Instance Profile Arn
+    Value: !GetAtt S3IamRole.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-IAM-ARN

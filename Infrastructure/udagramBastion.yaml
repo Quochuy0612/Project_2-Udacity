@@ -1,0 +1,72 @@
+Description:
+  HuyDVQ | Udacity 2023
+  AWS-CloudFormation script to create a Bastion access.
+
+############################### Parameters ################################
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: Udagram
+
+  KeyBastionSSH:
+    Description: KeyName to access bastion host
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: udagram
+  
+Mappings:
+  RegionMap:
+    us-east-1:
+      HVM64: ami-0715c1897453cabd1
+
+############################### Resources #################################
+Resources:
+  Bastion1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.medium
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', HVM64]
+      NetworkInterfaces:
+        - GroupSet:
+            - Fn::ImportValue: !Sub '${EnvironmentName}-BASTION-SG'
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId:
+            Fn::ImportValue: !Sub '${EnvironmentName}-PUB1-SN'
+      KeyName: !Sub ${KeyBastionSSH}
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-Bastion-1
+
+  Bastion2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.medium
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', HVM64]
+      NetworkInterfaces:
+        - GroupSet:
+            - Fn::ImportValue: !Sub '${EnvironmentName}-BASTION-SG'
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId:
+            Fn::ImportValue: !Sub '${EnvironmentName}-PUB2-SN'
+      KeyName: !Sub ${KeyBastionSSH}
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-Bastion-2
+
+############################### Outputs #################################
+Outputs:
+  CIDRBastion1:
+    Description: The CIDR of Bastion Host 1
+    Value: !GetAtt Bastion1.PrivateIp
+    Export:
+      Name: !Sub ${EnvironmentName}-BASTION1-CIDR
+
+  CIDRBastion2:
+    Description: The CIDR to the Bastion Host 2
+    Value: !GetAtt Bastion2.PrivateIp
+    Export:
+      Name: !Sub ${EnvironmentName}-BASTION2-CIDR

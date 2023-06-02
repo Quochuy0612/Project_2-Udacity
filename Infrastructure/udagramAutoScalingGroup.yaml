@@ -1,0 +1,88 @@
+Description: >
+  HuyDVQ | Udacity 2023
+  AWS-CloudFormation script to create a Auto Scaling Group.
+
+############################### Parameters ################################
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: Udagram
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      HVM64: ami-0715c1897453cabd1
+
+############################### Resources #################################
+Resources:
+  UdagramLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: UdagramLaunchTemplate
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Name: 
+            Fn::ImportValue: !Sub '${EnvironmentName}-IAM'
+        ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', HVM64]
+        InstanceType: t3.medium
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub '${EnvironmentName}-WebApp-SG'
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo su
+            yum update -y
+            yum install httpd -y
+            systemctl start httpd
+            systemctl enable httpd
+            echo "Response from server" > /var/www/html/index.html
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 10
+              VolumeType: gp2
+  
+  UdagramTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: UdagramTargetGroup
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: 
+        Fn::ImportValue: !Sub '${EnvironmentName}-VPCID'
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+
+  UdagramAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: UdagramAutoScalingGroup
+      LaunchTemplate:
+        LaunchTemplateName: UdagramLaunchTemplate
+        Version: !GetAtt UdagramLaunchTemplate.LatestVersionNumber
+      MinSize: 4
+      MaxSize: 6
+      DesiredCapacity: 4
+      TargetGroupARNs:
+        - !Ref UdagramTargetGroup
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub '${EnvironmentName}-PRI1-SN'
+        - Fn::ImportValue: !Sub '${EnvironmentName}-PRI2-SN'
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+
+############################### Outputs #################################
+Outputs: 
+  TargetGroup: 
+      Description: A reference to the created Target Group
+      Value: !Ref UdagramTargetGroup
+      Export:
+        Name: !Sub ${EnvironmentName}-TG

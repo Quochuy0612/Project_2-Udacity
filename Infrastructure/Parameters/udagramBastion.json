@@ -1,9 +1,10 @@
-[{
+[
+    {
         "ParameterKey": "EnvironmentName",
         "ParameterValue": "Udagram"
     },
     {
-        "ParameterKey": "WebAppACL",
-        "ParameterValue": "UdagramACL"
+        "ParameterKey": "KeyBastionSSH",
+        "ParameterValue": "udagram"
     }
 ]

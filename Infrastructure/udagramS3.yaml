@@ -1,7 +1,6 @@
 Description: >
   HuyDVQ | Udacity 2023
-  AWS-CloudFormation script to create a S3 bucket for deploying a high-availability 
-  web-app.
+  AWS-CloudFormation script to create a S3 bucket.
 
 ############################### Parameters ################################
 Parameters:
@@ -13,21 +12,20 @@ Parameters:
   S3BucketAppName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-app-huydvq
+    Default: bucket-udagram-app
 
   S3BucketKeyName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-key-huydvq
+    Default: bucket-udagram-key
 
   S3BucketLogsName:
     Description: A Bucked name.
     Type: String
-    Default: udagram-logs-huydvq
+    Default: bucket-udagram-logs
 
 ############################### Resources #################################
 Resources:
-  ## App Bucket
   S3WebApp:
     Type: AWS::S3::Bucket
     Properties:
@@ -55,7 +53,6 @@ Resources:
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3WebApp', '/*']]
             Principal: '*'
 
-  ## KeyPar Bucket
   S3KeyPar:
     Type: AWS::S3::Bucket
     Properties:
@@ -91,7 +88,6 @@ Resources:
             Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3KeyPar', '/*']]
             Principal: '*'
 
-  ## Logs Bucket
   S3Logs:
     Type: AWS::S3::Bucket
     Properties:
@@ -129,23 +125,26 @@ Resources:
 
 ############################### Outputs #################################
 Outputs:
-  WebsiteURL:
-    Value: !GetAtt [S3WebApp, WebsiteURL]
-    Description: URL for website hosted on S3
-  WebsiteSecureURL:
-    Value: !Join ['', ['https://', !GetAtt [S3WebApp, DomainName]]]
-    Description: Secure URL for website hosted on S3
-  S3KeyParT:
-    Value: !GetAtt [S3KeyPar, WebsiteURL]
-    Description: URL for key hosted on S3
-  S3KeyParTSecureURL:
-    Value: !Join ['', ['https://', !GetAtt [S3KeyPar, DomainName]]]
-    Description: Secure URL for key hosted on S3
-  S3Logs:
-    Value: !GetAtt [S3Logs, DomainName]
-    Description: URL for logs hosted on S3
+  S3WebAppURI:
+    Value: !Join ['', ['s3://', !Ref S3WebApp]]
+    Description: Secure URI for S3 WebApp
     Export:
-      Name: !Sub ${EnvironmentName}-S3-LOGS
-  S3LogsURL:
-    Value: !Join ['', ['https://', !GetAtt [S3Logs, DomainName]]]
-    Description: Secure URL for logs hosted on S3
+      Name: !Sub ${EnvironmentName}-S3WebAppURI
+
+  S3KeyParURI:
+    Value: !Join ['', ['s3://', !Ref S3KeyPar]]
+    Description: Secure URI for S3 KeyPar
+    Export:
+      Name: !Sub ${EnvironmentName}-S3KeyParURI
+
+  S3LogsURI:
+    Value: !Join ['', ['s3://', !Ref S3Logs]]
+    Description: Secure URI for S3 Logs
+    Export:
+      Name: !Sub ${EnvironmentName}-S3LogsURI
+      
+  S3Logs:
+    Value: !Ref S3Logs
+    Description: Secure URI for S3 S3Logs
+    Export:
+      Name: !Sub ${EnvironmentName}-S3Logs
